@@ -1,0 +1,1 @@
+from schema.audiovisual import Audiovisual

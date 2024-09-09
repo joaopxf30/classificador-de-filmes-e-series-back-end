@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from model import Session
 from model import Esportista, Treino
 from logger import logger
-from schemas import *
+import schema
 from flask_cors import CORS
 
 info = Info(title="Minha API", version="1.0.0")
@@ -15,7 +15,7 @@ app = OpenAPI(__name__, info=info)
 CORS(app)
 
 
-FILME_TAG = Tag(
+MOVIE_TAG = Tag(
     name="Esportista", 
     description="Adição, visualização e remoção de esportista da base"
 )
@@ -39,57 +39,51 @@ def home():
     return redirect("/openapi")
 
 
-@app.get(
-    "/filmes", 
-    tags=[FILME_TAG],
-    responses={
-        "200": ListagemEsportistasSchema, 
-        "404": ErrorSchema,
-    }
-)
-def obtem_lista_esportistas():
-    """Faz a busca por todos os esportistas cadastrados no banco de dados.
-    
-    Retorna uma representação desta listagem de esportistas.
-    """
-    logger.debug(f"Coletando esportistas")
-    # Criando conexão com a base
-    session = Session()
-    # Fazendo a busca por todos esportistas
-    esportistas = session.query(Esportista).all()
-    logger.debug(f"Obtendo esportistas")
-    if not esportistas:
-        # Caso em que não há esportistas registrados
-        return {"esportistas": []}, 200
-    else:
-        logger.debug(f"%d esportistas já registrados" % len(esportistas))
-        # Retorna a serialização da visualização de esportistas
-        return apresenta_esportistas(esportistas), 200
+# @app.get(
+#     "/movies", 
+#     tags=[MOVIE_TAG],
+#     responses={
+#         "200": schema.Movie, 
+#         "404": ErrorSchema,
+#     }
+# )
+# def get_movies():
+#     """Get all previous movies from the collection
+#     """
+#     logger.debug(f"Collecting movies")
+#     # Criando conexão com a base
+#     session = Session()
+#     # Fazendo a busca por todos esportistas
+#     movies = session.query(model.Movie).all()
+#     logger.debug(f"Obtendo esportistas")
+#     if not esportistas:
+#         # Caso em que não há esportistas registrados
+#         return {"esportistas": []}, 200
+#     else:
+#         logger.debug(f"%d esportistas já registrados" % len(esportistas))
+#         # Retorna a serialização da visualização de esportistas
+#         return apresenta_esportistas(esportistas), 200
 
 
 @app.post(
-    rule="/adiciona_filme", 
-    tags=[FILME_TAG],
+    rule="/add_movie", 
+    tags=[MOVIE_TAG],
     responses={
-        "200": EsportistaViewSchema,
+        "200": Movie,
         "400": ErrorSchema,
         "409": ErrorSchema,
     }
 )
-def cria_um_esportista(form: EsportistaSchema):
-    """Adiciona o registro de um novo esportista à base de dados.
-    
-    Retorna uma representação do esportista.
+def add_movie(form: MovieInfo):
+    """Add a new movie to the collection
     """
-    esportista = Esportista(**form.model_dump(by_alias=True))
+    
+    movie = model.Movie(**form.model_dump(by_alias=True))
     logger.debug(f"Tentativa de adicionar o/a esportista {esportista.nome_completo}")
 
     try:
-        # Criando conexão com a base
         session = Session()
-        # Adiciona esportista na respectiva tabela de registro de esportistas
-        session.add(esportista)
-        # Efetivando o comando de adição de novo item na tabela
+        session.add(movie)
         session.commit()
         logger.debug(f"Adicionado o/a esportista: {esportista.nome_completo}")
         # Retorna a serialização da visualização de um esportista
