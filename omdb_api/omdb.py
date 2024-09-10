@@ -3,7 +3,7 @@ import requests
 import backoff
 from .exceptions import (
     LackOfDataException,
-    OMDBApiException,
+    OMDbApiException,
 )
 from settings import (
     API_OBDM_HOST,
@@ -13,22 +13,22 @@ from settings import (
 LOG = logging.getLogger()
 
 
-class OMDBApi:
+class OMDbApi:
 
-    def get_movie(
+    def get_audiovisual(
         self, 
         imdb_id: str | None,
         title: str | None, 
         year: int | None,
     ):
-        return self._get_movie(
+        return self._get_audiovisual(
             params=self._parameters(imdb_id, title, year),
             url=API_OBDM_HOST,
         )
 
     @backoff.on_exception(
         backoff.constant,
-        exception=OMDBApiException,
+        exception=OMDbApiException,
         max_tries=3,
         interval=5,
         on_backoff=lambda x: LOG.warning(
@@ -39,7 +39,7 @@ class OMDBApi:
         ),
         raise_on_giveup=False,
     )
-    def _get_movie(self, params: dict, url: str):
+    def _get_audiovisual(self, params: dict, url: str):
 
         if not (params.get("t") or params.get("i")):
             raise LackOfDataException

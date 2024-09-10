@@ -1,1 +1,1 @@
-from .omdb import OMDBApi
+from .omdb import OMDbApi

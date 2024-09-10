@@ -1,1 +1,4 @@
-from schema.audiovisual import Audiovisual
+from schema.audiovisual import (
+    POSTAudiovisual,
+    Audiovisual,
+)

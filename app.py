@@ -1,3 +1,7 @@
+import pdb
+
+import logging
+
 from flask_openapi3 import OpenAPI, Info, Tag
 from flask import redirect
 from urllib.parse import unquote
@@ -5,17 +9,24 @@ from urllib.parse import unquote
 from sqlalchemy.exc import IntegrityError
 
 from model import Session
-from model import Esportista, Treino
-from logger import logger
-import schema
+
+from omdb_api import OMDbApi
+
+from schema import (
+    POSTAudiovisual, 
+    Audiovisual,
+)
+
 from flask_cors import CORS
 
 info = Info(title="Minha API", version="1.0.0")
 app = OpenAPI(__name__, info=info)
 CORS(app)
 
+LOG = logging.getLogger()
 
-MOVIE_TAG = Tag(
+
+AUDIOVISUAL_TAG = Tag(
     name="Esportista", 
     description="Adição, visualização e remoção de esportista da base"
 )
@@ -41,7 +52,7 @@ def home():
 
 # @app.get(
 #     "/movies", 
-#     tags=[MOVIE_TAG],
+#     tags=[AUDIOVISUAL_TAG],
 #     responses={
 #         "200": schema.Movie, 
 #         "404": ErrorSchema,
@@ -66,40 +77,48 @@ def home():
 
 
 @app.post(
-    rule="/add_movie", 
-    tags=[MOVIE_TAG],
+    rule="/add_audiovisual", 
+    tags=[AUDIOVISUAL_TAG],
     responses={
-        "200": Movie,
-        "400": ErrorSchema,
-        "409": ErrorSchema,
+        "200": Audiovisual,
+        # "400": ErrorSchema,
+        # "409": ErrorSchema,
     }
 )
-def add_movie(form: MovieInfo):
-    """Add a new movie to the collection
+def add_audiovisual(form: POSTAudiovisual):
+    """Add a new movie or series to the collection
     """
-    
-    movie = model.Movie(**form.model_dump(by_alias=True))
-    logger.debug(f"Tentativa de adicionar o/a esportista {esportista.nome_completo}")
+    response = OMDbApi().get_audiovisual(**form.model_dump())
 
-    try:
-        session = Session()
-        session.add(movie)
-        session.commit()
-        logger.debug(f"Adicionado o/a esportista: {esportista.nome_completo}")
-        # Retorna a serialização da visualização de um esportista
-        return apresenta_esportista(esportista), 200
+    LOG.debug(print(response.json()))
 
-    except IntegrityError:
-        # O nome é uma chave primária, logo não pode haver mais tuplas com essa característica
-        error_msg = f"O/A esportista {esportista.nome_completo} já existe na base"
-        logger.warning(f"Erro ao adicionar o/a esportista {esportista.nome_completo}. {error_msg}")
-        return {"message": error_msg}, 409
+    pdb.set_trace()
 
-    except Exception:
-        # Caso de um erro fora do previsto
-        error_msg = f"Não foi possível cadastrar o/a esportista {esportista.nome_completo}"
-        logger.warning(f"Erro ao adicionar o/a esportista {esportista.nome_completo}. {error_msg}")
-        return {"message": error_msg}, 400
+    audiovisual = Audiovisual.model_validate(obj=response.json())
+
+    LOG.debug(audiovisual)
+
+    # logger.debug(f"Tentativa de adicionar o/a esportista {esportista.nome_completo}")
+
+    # try:
+    #     session = Session()
+    #     session.add(movie)
+    #     session.commit()
+    #     logger.debug(f"Adicionado o/a esportista: {esportista.nome_completo}")
+    #     # Retorna a serialização da visualização de um esportista
+    #     return apresenta_esportista(esportista), 200
+
+    # except IntegrityError:
+    #     # O nome é uma chave primária, logo não pode haver mais tuplas com essa característica
+    #     error_msg = f"O/A esportista {esportista.nome_completo} já existe na base"
+    #     logger.warning(f"Erro ao adicionar o/a esportista {esportista.nome_completo}. {error_msg}")
+    #     return {"message": error_msg}, 409
+
+    # except Exception:
+    #     # Caso de um erro fora do previsto
+    #     error_msg = f"Não foi possível cadastrar o/a esportista {esportista.nome_completo}"
+    #     logger.warning(f"Erro ao adicionar o/a esportista {esportista.nome_completo}. {error_msg}")
+    #     return {"message": error_msg}, 400
     
 
 # @app.delete(
