@@ -1,5 +1,6 @@
 import regex as re
 import pdb
+import logging
 from pydantic import (
     BaseModel, 
     HttpUrl, 
@@ -12,6 +13,8 @@ from pydantic import (
 from pydantic.alias_generators import to_camel, to_pascal, to_snake
 from datetime import date, time
 from typing import Any
+
+LOG = logging.getLogger()
 
 
 class POSTAudiovisual(BaseModel):
@@ -33,7 +36,7 @@ class POSTAudiovisual(BaseModel):
     @field_validator("title")
     @classmethod
     def _replace_whitespaces_for_request(cls, v: str | None) -> str:
-        return re.sub(r"\s", "+", v)
+        return re.sub(r"\s", "+", v) if v else v
 
 
 class Rating(BaseModel):
@@ -53,10 +56,10 @@ class Audiovisual(BaseModel):
 
     """
     title: str | None
-    year: int | None
+    year: str | int | None
     rated: str | None
-    released: date | None
-    runtime: time | None
+    released: str | None
+    runtime: str | None
     genre: str | None
     director: str | None
     writer: str | None
@@ -72,10 +75,11 @@ class Audiovisual(BaseModel):
     imdb_votes: float | None
     imdb_id: str | None = Field(validation_alias="imdbID")
     type: str | None
-    dvd: str | None = Field(validation_alias="DVD")
-    box_office: float | None
-    production: str | None
-    website: str | None
+    dvd: str | None = Field(default=None, validation_alias="DVD")
+    total_seasons: str | None = None
+    box_office: float | None = None
+    production: str | None = None
+    website: str | None = None
     response: bool
 
     model_config = ConfigDict(
@@ -87,14 +91,6 @@ class Audiovisual(BaseModel):
             serialization_alias=to_snake,
         ),
     )
-
-    @field_validator("*", mode="before")
-    @classmethod
-    def _empty_field(cls, v: Any) -> str | None:
-        if isinstance(v, str) and re.search(r"N/A", v):
-            return None
-    
-        return v
     
     @field_validator("imdb_rating", "imdb_votes", mode="before")
     @classmethod
@@ -102,4 +98,24 @@ class Audiovisual(BaseModel):
         if v and re.search(r",", v):
             return float(re.sub(",", ".", v))
         
+        return v
+    
+    @field_validator("box_office", mode="before")
+    @classmethod
+    def _convert_dollar_to_float(cls, v: str | None) -> float | None:
+        if v:
+            if re.search(r",", v):
+                v = re.sub(",", "", v)
+            if re.search(r"\$", v):
+                v = re.sub("\$", "", v)
+            return float(v)
+        
+        return v
+ 
+    @field_validator("*", mode="before")
+    @classmethod
+    def _empty_field(cls, v: Any) -> str | None:
+        if isinstance(v, str) and re.search(r"N/A", v):
+            return None
+    
         return v

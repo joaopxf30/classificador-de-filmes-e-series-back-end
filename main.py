@@ -1,7 +1,13 @@
-from omdb_api import OMDBApi
+from schema import POSTAudiovisual
+from app import add_audiovisual
 
 if __name__ == "__main__":
-    OMDBApi().get_movie(
-        title="Jennie+The+Manner+of+Hell",
-        year=2000,
+    audiovisual = add_audiovisual(
+        POSTAudiovisual.model_validate(
+            {
+                "IMDbID":None,
+                "title":"Harry Potter",
+                "year":None,
+            }
+        )
     )

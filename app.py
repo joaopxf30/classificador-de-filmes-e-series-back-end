@@ -89,14 +89,9 @@ def add_audiovisual(form: POSTAudiovisual):
     """Add a new movie or series to the collection
     """
     response = OMDbApi().get_audiovisual(**form.model_dump())
+    audiovisual = Audiovisual.model_validate(response.json())
 
-    LOG.debug(print(response.json()))
-
-    pdb.set_trace()
-
-    audiovisual = Audiovisual.model_validate(obj=response.json())
-
-    LOG.debug(audiovisual)
+    return audiovisual
 
     # logger.debug(f"Tentativa de adicionar o/a esportista {esportista.nome_completo}")
 
