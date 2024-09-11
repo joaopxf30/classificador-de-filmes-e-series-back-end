@@ -5,8 +5,8 @@ from sqlalchemy import create_engine, event
 import os
 
 # Importando os elementos definidos no modelo
-# from model.base import GerenciadorTreinosBase
-# from model.model import Esportista, Treino
+from model.base import ClassificadorFilmesSeriesBase
+
 
 
 db_path = "database/"
@@ -36,4 +36,4 @@ if not database_exists(engine.url):
     create_database(engine.url) 
 
 # Cria as tabelas do banco, caso não existam
-# GerenciadorTreinosBase.metadata.create_all(engine)
+ClassificadorFilmesSeriesBase.metadata.create_all(engine)

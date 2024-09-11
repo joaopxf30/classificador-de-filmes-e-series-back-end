@@ -1,5 +1,4 @@
 import regex as re
-import pdb
 import logging
 from pydantic import (
     BaseModel, 
@@ -11,7 +10,6 @@ from pydantic import (
     Field,
 )
 from pydantic.alias_generators import to_camel, to_pascal, to_snake
-from datetime import date, time
 from typing import Any
 
 LOG = logging.getLogger()
@@ -39,18 +37,6 @@ class POSTAudiovisual(BaseModel):
         return re.sub(r"\s", "+", v) if v else v
 
 
-class Rating(BaseModel):
-    source: str
-    value: str
-
-    model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            validation_alias=to_pascal,
-            serialization_alias=to_snake,
-        ),
-    )
-
-
 class Audiovisual(BaseModel):
     """It represents the response of a successful request to the OMDb Api  
 
@@ -68,8 +54,8 @@ class Audiovisual(BaseModel):
     language: str | None
     country: str | None
     awards: str | None
-    poster: HttpUrl | None
-    ratings: list[Rating] | None
+    poster: str | None
+    ratings: list["Rating"] | None
     metascore: int | None
     imdb_rating: float | None
     imdb_votes: float | None
@@ -77,7 +63,7 @@ class Audiovisual(BaseModel):
     type: str | None
     dvd: str | None = Field(default=None, validation_alias="DVD")
     total_seasons: str | None = None
-    box_office: float | None = None
+    box_office: str | None = None
     production: str | None = None
     website: str | None = None
     response: bool
@@ -100,22 +86,21 @@ class Audiovisual(BaseModel):
         
         return v
     
-    @field_validator("box_office", mode="before")
-    @classmethod
-    def _convert_dollar_to_float(cls, v: str | None) -> float | None:
-        if v:
-            if re.search(r",", v):
-                v = re.sub(",", "", v)
-            if re.search(r"\$", v):
-                v = re.sub("\$", "", v)
-            return float(v)
-        
-        return v
- 
     @field_validator("*", mode="before")
-    @classmethod
     def _empty_field(cls, v: Any) -> str | None:
         if isinstance(v, str) and re.search(r"N/A", v):
             return None
     
         return v
+    
+
+class Rating(BaseModel):
+    source: str
+    value: str
+
+    model_config = ConfigDict(
+        alias_generator=AliasGenerator(
+            validation_alias=to_pascal,
+            serialization_alias=to_snake,
+        ),
+    )

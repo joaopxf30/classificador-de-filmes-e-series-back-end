@@ -1,14 +1,11 @@
-import pdb
-
 import logging
 
 from flask_openapi3 import OpenAPI, Info, Tag
 from flask import redirect
 from urllib.parse import unquote
 
-from sqlalchemy.exc import IntegrityError
-
 from model import Session
+import model.audiovisual as model
 
 from omdb_api import OMDbApi
 
@@ -87,11 +84,17 @@ def home():
 )
 def add_audiovisual(form: POSTAudiovisual):
     """Add a new movie or series to the collection
+
     """
     response = OMDbApi().get_audiovisual(**form.model_dump())
     audiovisual = Audiovisual.model_validate(response.json())
+    serial = audiovisual.model_dump(exclude={"ratings"})
+    db_data = model.Audiovisual(**serial)
 
-    return audiovisual
+    session = Session()
+    session.add(db_data)
+    session.commit()
+
 
     # logger.debug(f"Tentativa de adicionar o/a esportista {esportista.nome_completo}")
 
