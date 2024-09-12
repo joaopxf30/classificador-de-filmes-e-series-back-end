@@ -55,7 +55,7 @@ class Audiovisual(BaseModel):
     country: str | None
     awards: str | None
     poster: str | None
-    ratings: list["Rating"] | None
+    ratings: list["Rating"] | None = None
     metascore: int | None
     imdb_rating: float | None
     imdb_votes: float | None
@@ -69,6 +69,8 @@ class Audiovisual(BaseModel):
     response: bool
 
     model_config = ConfigDict(
+        populate_by_name=True,
+        from_attributes=True,
         alias_generator=AliasGenerator(
             validation_alias= lambda f: AliasChoices(
                 to_camel(f),
@@ -80,8 +82,8 @@ class Audiovisual(BaseModel):
     
     @field_validator("imdb_rating", "imdb_votes", mode="before")
     @classmethod
-    def _change_commma_to_dot(cls, v: float | None) -> float | None:
-        if v and re.search(r",", v):
+    def _change_commma_to_dot(cls, v: str | float | None) -> float | None:
+        if v and isinstance(v, str) and re.search(r",", v):
             return float(re.sub(",", ".", v))
         
         return v
@@ -104,3 +106,18 @@ class Rating(BaseModel):
             serialization_alias=to_snake,
         ),
     )
+
+
+def return_audiovisual_view(audiovisual: Audiovisual) -> dict:
+    return audiovisual.model_dump(
+        include={
+            "title",
+            "year",
+            "runtime",
+            "genre",
+            "director",
+            "actors",
+            "plot",
+        }
+    )
+

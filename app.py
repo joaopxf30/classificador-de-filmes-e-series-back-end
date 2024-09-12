@@ -9,9 +9,12 @@ import model.audiovisual as model
 
 from omdb_api import OMDbApi
 
+from sqlalchemy.exc import IntegrityError
+
 from schema import (
     POSTAudiovisual, 
     Audiovisual,
+    return_audiovisual_view
 )
 
 from flask_cors import CORS
@@ -47,31 +50,38 @@ def home():
     return redirect("/openapi")
 
 
-# @app.get(
-#     "/movies", 
-#     tags=[AUDIOVISUAL_TAG],
-#     responses={
-#         "200": schema.Movie, 
-#         "404": ErrorSchema,
-#     }
-# )
-# def get_movies():
-#     """Get all previous movies from the collection
-#     """
-#     logger.debug(f"Collecting movies")
-#     # Criando conexão com a base
-#     session = Session()
-#     # Fazendo a busca por todos esportistas
-#     movies = session.query(model.Movie).all()
-#     logger.debug(f"Obtendo esportistas")
-#     if not esportistas:
-#         # Caso em que não há esportistas registrados
-#         return {"esportistas": []}, 200
-#     else:
-#         logger.debug(f"%d esportistas já registrados" % len(esportistas))
-#         # Retorna a serialização da visualização de esportistas
-#         return apresenta_esportistas(esportistas), 200
+@app.get(
+    "/audiovisuals", 
+    tags=[AUDIOVISUAL_TAG],
+    responses={
+        # "200": schema.Audiovisual, 
+        # "404": ErrorSchema,
+    }
+)
+def get_audiovisuals():
+    """Get all previous movies or series from the collection
 
+    """
+    LOG.debug(f"Collecting movies and series")
+    
+    session = Session()
+
+    if db_data := session.query(model.Audiovisual).all():
+        LOG.debug("There are %d movies and series on the collection" % len(db_data))
+        audiovisuals = list(
+            map(
+                lambda v: Audiovisual.model_validate(v),
+                db_data
+            )
+        )
+        return {
+            "audiovisuals": [
+                return_audiovisual_view(v) for v in audiovisuals
+            ]
+        }, 200
+    
+    return {"audiovisuals": []}, 200
+    
 
 @app.post(
     rule="/add_audiovisual", 
@@ -91,32 +101,28 @@ def add_audiovisual(form: POSTAudiovisual):
     serial = audiovisual.model_dump(exclude={"ratings"})
     db_data = model.Audiovisual(**serial)
 
-    session = Session()
-    session.add(db_data)
-    session.commit()
+    LOG.debug(f"Trying to add the movie or series {audiovisual.title} to the collection")
 
+    try:
+        session = Session()
+        session.add(db_data)        
+        session.commit()
+        
+        # return apresenta_esportista(esportista), 200
 
-    # logger.debug(f"Tentativa de adicionar o/a esportista {esportista.nome_completo}")
+    except IntegrityError:
+        # Unique constraint failed
+        error_msg = f"The movie or series {audiovisual.title} has been already added"
+        LOG.warning(error_msg)
 
-    # try:
-    #     session = Session()
-    #     session.add(movie)
-    #     session.commit()
-    #     logger.debug(f"Adicionado o/a esportista: {esportista.nome_completo}")
-    #     # Retorna a serialização da visualização de um esportista
-    #     return apresenta_esportista(esportista), 200
+        return {"message": error_msg}, 409
 
-    # except IntegrityError:
-    #     # O nome é uma chave primária, logo não pode haver mais tuplas com essa característica
-    #     error_msg = f"O/A esportista {esportista.nome_completo} já existe na base"
-    #     logger.warning(f"Erro ao adicionar o/a esportista {esportista.nome_completo}. {error_msg}")
-    #     return {"message": error_msg}, 409
+    except Exception:
+        # Dealing with general exceptions
+        error_msg = f"It was not possible to add the movie or series {audiovisual.title} to the collection"
+        LOG.warning(error_msg)
 
-    # except Exception:
-    #     # Caso de um erro fora do previsto
-    #     error_msg = f"Não foi possível cadastrar o/a esportista {esportista.nome_completo}"
-    #     logger.warning(f"Erro ao adicionar o/a esportista {esportista.nome_completo}. {error_msg}")
-    #     return {"message": error_msg}, 400
+        return {"message": error_msg}, 400
     
 
 # @app.delete(
