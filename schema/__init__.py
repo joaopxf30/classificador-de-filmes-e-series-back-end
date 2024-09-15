@@ -1,5 +1,12 @@
 from schema.audiovisual import (
-    POSTAudiovisual,
+    PostAudiovisual,
     Audiovisual,
-    return_audiovisual_view
+    AudiovisualView,
+    AudiovisualQuery,
+)
+from schema.rating import (
+    PostRating,
+    PutRating,
+    RatingView,
+    RatingQuery,
 )

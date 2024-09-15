@@ -5,7 +5,8 @@ from sqlalchemy import create_engine, event
 import os
 
 # Importando os elementos definidos no modelo
-from model.base import ClassificadorFilmesSeriesBase
+from model.base import MoviesAndSeriesBase
+from model.model import Audiovisual, Rating
 
 
 
@@ -36,4 +37,4 @@ if not database_exists(engine.url):
     create_database(engine.url) 
 
 # Cria as tabelas do banco, caso não existam
-ClassificadorFilmesSeriesBase.metadata.create_all(engine)
+MoviesAndSeriesBase.metadata.create_all(engine)

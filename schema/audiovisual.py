@@ -1,5 +1,6 @@
 import regex as re
 import logging
+from uuid import UUID
 from pydantic import (
     BaseModel, 
     HttpUrl, 
@@ -11,13 +12,16 @@ from pydantic import (
 )
 from pydantic.alias_generators import to_camel, to_pascal, to_snake
 from typing import Any
+from model import Rating
+
+from constants import Notes
 
 LOG = logging.getLogger()
 
 
-class POSTAudiovisual(BaseModel):
+class PostAudiovisual(BaseModel):
     """It represents the form of a POST request for an Audiovisual's instance
-    through OMDb API   
+    through OMDb API.   
 
     """
     imdb_id: str | None = Field(default=None, validation_alias="IMDbID")
@@ -38,7 +42,7 @@ class POSTAudiovisual(BaseModel):
 
 
 class Audiovisual(BaseModel):
-    """It represents the response of a successful request to the OMDb Api  
+    """It represents the content of a successful request to the OMDb Api.  
 
     """
     title: str | None
@@ -55,10 +59,10 @@ class Audiovisual(BaseModel):
     country: str | None
     awards: str | None
     poster: str | None
-    ratings: list["Rating"] | None = None
+    ratings: list["OMDbRating"] | None = None
     metascore: int | None
     imdb_rating: float | None
-    imdb_votes: float | None
+    imdb_votes: str | None
     imdb_id: str | None = Field(validation_alias="imdbID")
     type: str | None
     dvd: str | None = Field(default=None, validation_alias="DVD")
@@ -80,7 +84,7 @@ class Audiovisual(BaseModel):
         ),
     )
     
-    @field_validator("imdb_rating", "imdb_votes", mode="before")
+    @field_validator("imdb_rating", mode="before")
     @classmethod
     def _change_commma_to_dot(cls, v: str | float | None) -> float | None:
         if v and isinstance(v, str) and re.search(r",", v):
@@ -96,7 +100,7 @@ class Audiovisual(BaseModel):
         return v
     
 
-class Rating(BaseModel):
+class OMDbRating(BaseModel):
     source: str
     value: str
 
@@ -108,16 +112,33 @@ class Rating(BaseModel):
     )
 
 
-def return_audiovisual_view(audiovisual: Audiovisual) -> dict:
-    return audiovisual.model_dump(
-        include={
-            "title",
-            "year",
-            "runtime",
-            "genre",
-            "director",
-            "actors",
-            "plot",
-        }
+class AudiovisualView(BaseModel):
+    """It represents how an instance of Audiovisual is returned.
+
+    """
+    title: str | None
+    year: str | int | None
+    runtime: str | None
+    genre: str | None
+    director: str | None
+    actors: str | None
+    plot: str | None
+    rating: Notes | None
+
+    model_config = ConfigDict(
+        from_attributes=True,
     )
 
+    @field_validator("rating", mode="before")
+    def _return_rating(cls, v: Rating | None) -> Notes | None:
+        if isinstance(v, Rating):
+            return v.rating
+        return v
+    
+
+class AudiovisualQuery(BaseModel):
+    """It represents the parameters for a query to a movie or
+    series.
+
+    """
+    id: str

@@ -1,20 +1,29 @@
 import logging
+import pdb
+from uuid import UUID
 
 from flask_openapi3 import OpenAPI, Info, Tag
 from flask import redirect
 from urllib.parse import unquote
 
 from model import Session
-import model.audiovisual as model
+import model.model as model
 
 from omdb_api import OMDbApi
+
+from sqlalchemy import inspect, select
 
 from sqlalchemy.exc import IntegrityError
 
 from schema import (
-    POSTAudiovisual, 
+    PostAudiovisual, 
     Audiovisual,
-    return_audiovisual_view
+    AudiovisualView,
+    AudiovisualQuery,
+    PostRating,
+    PutRating,
+    RatingView,
+    RatingQuery,
 )
 
 from flask_cors import CORS
@@ -27,16 +36,16 @@ LOG = logging.getLogger()
 
 
 AUDIOVISUAL_TAG = Tag(
-    name="Esportista", 
-    description="Adição, visualização e remoção de esportista da base"
+    name="Audiovisual", 
+    description="Addition, view and removal of movies and series"
 )
-# TREINO_TAG = Tag(
-#     name="Treino",
-#     description="Adição, visulização e remoção de treino da base"
-# )
+RATING_TAG = Tag(
+    name="Rating",
+    description="Addition, view, edit and removal of movies and series' tag"
+)
 HOME_TAG = Tag(
-    name="Documentação", 
-    description="Seleção de documentação: Swagger, Redoc ou RapiDoc"
+    name="Documentation", 
+    description="Documentation forms: Swagger, Redoc or RapiDoc"
 )
 
 
@@ -54,64 +63,63 @@ def home():
     "/audiovisuals", 
     tags=[AUDIOVISUAL_TAG],
     responses={
-        # "200": schema.Audiovisual, 
+        "200": AudiovisualView, 
         # "404": ErrorSchema,
     }
 )
 def get_audiovisuals():
-    """Get all previous movies or series from the collection
+    """Get all previous movies or series and the given rating
+    from the collection. If the audiovisual has not been yet
+    rated, the rating attribute is None.
 
     """
-    LOG.debug(f"Collecting movies and series")
-    
+    LOG.info(f"Collecting movies and series")
     session = Session()
 
     if db_data := session.query(model.Audiovisual).all():
-        LOG.debug("There are %d movies and series on the collection" % len(db_data))
-        audiovisuals = list(
+        LOG.info("There are %d movies and series on the collection" % len(db_data))
+        audiovisuals_view = list(
             map(
-                lambda v: Audiovisual.model_validate(v),
+                lambda v: AudiovisualView.model_validate(v),
                 db_data
             )
         )
-        return {
-            "audiovisuals": [
-                return_audiovisual_view(v) for v in audiovisuals
-            ]
-        }, 200
+        return {"audiovisuals": [v.model_dump() for v in audiovisuals_view]}, 200
     
     return {"audiovisuals": []}, 200
-    
+        
 
 @app.post(
     rule="/add_audiovisual", 
     tags=[AUDIOVISUAL_TAG],
     responses={
-        "200": Audiovisual,
+        "200": AudiovisualView,
         # "400": ErrorSchema,
         # "409": ErrorSchema,
     }
 )
-def add_audiovisual(form: POSTAudiovisual):
+def add_audiovisual(form: PostAudiovisual):
     """Add a new movie or series to the collection
 
     """
+    session = Session()
+
     response = OMDbApi().get_audiovisual(**form.model_dump())
     audiovisual = Audiovisual.model_validate(response.json())
     serial = audiovisual.model_dump(exclude={"ratings"})
     db_data = model.Audiovisual(**serial)
 
-    LOG.debug(f"Trying to add the movie or series {audiovisual.title} to the collection")
-
     try:
-        session = Session()
+        LOG.info(f"Trying to add the movie or series {audiovisual.title} to the collection")
         session.add(db_data)        
         session.commit()
         
-        # return apresenta_esportista(esportista), 200
+        audiovisual_view = AudiovisualView.model_validate(db_data)
+
+        return audiovisual_view.model_dump(), 200
 
     except IntegrityError:
-        # Unique constraint failed
+        # Unique constraint disrespected
         error_msg = f"The movie or series {audiovisual.title} has been already added"
         LOG.warning(error_msg)
 
@@ -119,166 +127,163 @@ def add_audiovisual(form: POSTAudiovisual):
 
     except Exception:
         # Dealing with general exceptions
-        error_msg = f"It was not possible to add the movie or series {audiovisual.title} to the collection"
+        error_msg = (
+            "It was not possible to add the movie or "
+            f"series {audiovisual.title} to the collection"
+        )
         LOG.warning(error_msg)
 
         return {"message": error_msg}, 400
     
 
-# @app.delete(
-#     rule="/esportista", 
-#     tags=[FILME_TAG],
-#     responses={
-#         "200": EsportistaDeletadoSchema, 
-#         "404": ErrorSchema
-#     }
-# )
-# def deleta_esportista(query: EsportistaBuscaSchema):
-#     """Deleta um esportista a partir de seu nome.
+@app.delete(
+    rule="/delete_audiovisual", 
+    tags=[AUDIOVISUAL_TAG],
+    responses={
+        # "200": EsportistaDeletadoSchema, 
+        # "404": ErrorSchema
+    }
+)
+def delete_audiovisual(query: AudiovisualQuery):
+    """Delete a movie or series from the collection and
+    its rating if it was rated before.
 
-#     O esportista é deletado do banco de dados. \
-#     Consequentemente, os treinos associados a este \
-#     esportista também são deletados. No final uma \
-#     mensagem de confirmação da remoção é retornada.
-#     """
-#     esportista_nome = unquote(query.nome)
-#     logger.debug(f"Deletando dados sobre esportista {esportista_nome}")
-#     # Criando conexão com a base
-#     session = Session()
-#     # Fazendo a remoção do esportista e treinos associados
-#     delecao = session.query(Esportista).filter(
-#         Esportista.nome_completo == esportista_nome
-#     ).delete()
-#     # Efetivando o comando de remoção de esportista e treinos associados na tabela
-#     session.commit()
+    """
+    session = Session()
 
-#     if delecao:
-#         logger.debug(f"Esportista {esportista_nome} deletado/a")
-#         # Retorna a representação da mensagem de confirmação do delete
-#         return {"message": "Esportista deletado/a", "nome": esportista_nome}, 200
-#     else:
-#         # Caso o esportista não for encontrado no banco de dados
-#         error_msg = "Esportista não foi registrado!"
-#         logger.warning(f"Erro ao deletar esportista {esportista_nome}. {error_msg}")
-#         return {"message": error_msg}, 404
+    if session.query(model.Audiovisual).filter(
+        model.Audiovisual.id == UUID(unquote(query.id))
+    ).delete():
+        
+        session.commit()
+        msg = "Movie or series removed"
+        LOG.info(f"Movie or series is no longer on the collection")
+        return {"message": msg}, 200
     
+    error_msg = f"There is no movie or series related to {query.id}"
+    LOG.warning(f"{error_msg}")
+    return {"message": error_msg}, 404
 
-# @app.get(
-#     "/treinos", 
-#     tags=[TREINO_TAG],
-#     responses={
-#         "200": ListagemTreinosSchema, 
-#         "404": ErrorSchema,
-#     }
-# )
-# def obtem_lista_treinos():
-#     """Faz a busca por todos os treinos registrados no banco de dados.
+
+@app.post(
+    rule="/add_rating", 
+    tags=[RATING_TAG],
+    responses={
+        "200": RatingView,
+        # "400": ErrorSchema,
+        # "409": ErrorSchema,
+    }
+)
+def add_rating(form: PostRating):
+    """Add a rating to a movie or series from the the collection
+
+    """
+    session = Session()
     
-#     Retorna uma representação desta listagem de treinos.
-#     """
-#     logger.debug("Coletando treinos")
-#     # Criando conexão com a base
-#     session = Session()
-#     # Fazendo a busca
-#     treinos = session.query(Treino).all()
-#     logger.debug("Obtendo treinos")
-#     if not treinos:
-#         # Caso em que não há treinos registrados
-#         return {"treinos": []}, 200
-#     else:
-#         logger.debug(f"%d treinos já registrados" % len(treinos))
-#         # Retorna a serialização da visualização de treinos
-#         return apresenta_treinos(treinos), 200
+    db_data = model.Rating(**form.model_dump())
 
+    try:
+        LOG.info(f"Trying to add rating for movie or series")
+        session.add(db_data)        
+        session.commit()
 
-# @app.post(
-#     rule="/adiciona_treino",
-#     tags=[TREINO_TAG],
-#     responses={
-#         "200": TreinoViewSchema,
-#         "400": ErrorSchema,
-#         "409": ErrorSchema,
-#     }
-# )
-# def cria_um_treino(form: TreinoSchema):
-#     """Adiciona um treino para um esportista já cadastrado.
+        rating_view = RatingView.model_validate(db_data)
+        
+        return rating_view.model_dump(), 200
     
-#     Retorna uma representação do treino.
-#     """
-#     treino = Treino(**form.model_dump(by_alias=True))
-#     logger.debug(f"Tentativa de adicionar novo treino")
+    except IntegrityError as e:
+        integrity_error = e.orig.sqlite_errorname
 
-#     try:
-#         # Criando conexão com a base
-#         session = Session()
-#         # Adiciona treino na respectiva tabela no banco de dados
-#         session.add(treino)
-#         # Efetivando o comando de adição de novo treino na tabela
-#         session.commit()
-#         logger.debug(f"Adicionado treino do esportista: {treino.esportista}")
-#         # Retorna a serialização da visualização de treino
-#         return apresenta_treino(treino), 200
+        if integrity_error == "SQLITE_CONSTRAINT_UNIQUE":
+            # Constaint unique disrespected
+            
+            audiovisual = Session().query(model.Audiovisual).filter(
+                model.Audiovisual.id == form.audiovisual_id
+            ).one()
+
+            error_msg = (
+                "It is not possible to add another note for "
+                f"{audiovisual.title}. A PUT request should "
+                "be done instead."
+            )
+        
+        elif integrity_error == "SQLITE_CONSTRAINT_FOREIGNKEY":
+            # Foreign key constraint disrespected
+            error_msg = (
+                f"The uuid code {form.audiovisual_id} is not "
+                "related to any movie or series from the collection"
+            )
+
+        else:
+            error_msg = "The integrity of the database has been affected"
+
+        LOG.warning(f"Fail to add rating: {error_msg}")
+        return {"message": error_msg}, 409
+
+    except Exception as e:
+        # Dealing with general exceptions
+        error_msg = f"It was not possible to add the rating"
+        LOG.warning(error_msg)
+        return {"message": error_msg}, 400
+
+   
+@app.put(
+    rule="/change_rating",
+    tags=[RATING_TAG],
+    responses={
+        "200": PutRating,
+        # "400": ErrorSchema,
+        # "409": ErrorSchema,
+    }
+)
+def change_rating(form: PutRating):
+    """Change the rating for a movie or series
+
+    """
+    LOG.info(f"Trying to change the previous rating for {form.rating}")
+    session = Session()
+
+    if db_data := session.query(model.Rating).filter(
+        model.Rating.audiovisual_id == form.audiovisual_id
+    ).one_or_none():
+        
+        db_data.rating = form.rating
+        session.add(db_data)
+        session.commit()
+
+        LOG.info(f"The rating has been changed to {form.rating}")
+        return {"rating": form.rating}, 200
     
-#     except IntegrityError as e:
-#         propriedades_do_erro = e.orig.__dict__
-#         nome_do_erro = propriedades_do_erro["sqlite_errorname"]
-#         if nome_do_erro == "SQLITE_CONSTRAINT_PRIMARYKEY":
-#             # A tripla nome, data e esporte é uma chave primária, logo não pode haver 
-#             # mais tuplas com essa característica
-#             error_msg = f"Já existe um treino para {form.nome_esportista} de {form.esporte} registrado em {form.data_treino}"
-#         else:
-#             # Cenário em que o esportista não foi registrado previamente, não respeitando
-#             # a integridade referencial
-#             error_msg = f"O/A esportista {form.nome_esportista} não foi registrado previamente."
-#         logger.warning(f"Erro ao adicionar o treino. {error_msg}")
-#         return {"message": error_msg}, 409
-
-#     except Exception:
-#         # Casos de erro não esperados
-#         error_msg = f"Não foi possível cadastrar o treino de {form.nome_esportista}."
-#         logger.warning(f"{error_msg}")
-#         return {"message": error_msg}, 400
+    error_msg = f"There is no movie or series related to {form.audiovisual_id}"
+    LOG.warning(f"{error_msg}")
+    return {"message": error_msg}, 409
 
 
-# @app.delete(
-#     rule="/treino", 
-#     tags=[TREINO_TAG],
-#     responses={
-#         "200": EsportistaDeletadoSchema, 
-#         "404": ErrorSchema
-#     }
-# )
-# def deleta_treino(query: TreinoBuscaSchema):
-#     """Deleta um treino a partir da composição \
-#     dada pelo nome do esportista, a data do \
-#     treino e a modalidade praticada. 
+@app.delete(
+    rule="/delete_rating", 
+    tags=[RATING_TAG],
+    responses={
+        # "200": EsportistaDeletadoSchema, 
+        # "404": ErrorSchema
+    }
+)
+def delete_rating(query: RatingQuery):
+    """Delete a movie or series' rating from the collection
+
+    """
+    LOG.info(f"Trying to remove the rating related to {query.audiovisual_id}")
+    session = Session()
+
+    if session.query(model.Rating).filter(
+        model.Rating.audiovisual_id 
+        == UUID(unquote(query.audiovisual_id))
+    ).delete():
+        
+        session.commit()
+        msg = "Previous rating has been removed"
+        LOG.info(f"The rating is no longer on the collection")
+        return {"message": msg}, 200
     
-    
-#     Retorna uma mensagem de confirmação da remoção.
-#     """
-#     nome_esportista = unquote(query.nome)
-#     data_treino = unquote(query.data)
-#     esporte = unquote(query.esporte)
-#     logger.debug(
-#         f"Deletando o treino de {nome_esportista} de {esporte} do dia {data_treino}"
-#     )
-#     # Criando conexão com a base
-#     session = Session()
-#     # Fazendo a remoção do treino
-#     delecao = session.query(Treino).filter(
-#         Treino.nome_esportista == nome_esportista,
-#         Treino.data_treino == data_treino,
-#         Treino.esporte == esporte
-#     ).delete()
-#     # Efetivando o comando de remoção de treino
-#     session.commit()
-
-#     if delecao:
-#         # Retorna a representação da mensagem de confirmação do delete
-#         logger.debug(f"Treino deletado/a")
-#         return {"message": "Treino deletado"}, 200
-#     else:
-#         # Cenário em que um determinado treino foi registrado
-#         error_msg = "Treino não foi registrado!"
-#         logger.warning(f"Erro ao deletar treino")
-#         return {"message": error_msg}, 404
+    error_msg = f"There is no rating related to {query.audiovisual_id}"
+    LOG.warning(f"{error_msg}")
+    return {"message": error_msg}, 404

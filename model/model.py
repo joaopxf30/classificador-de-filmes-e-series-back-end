@@ -5,14 +5,16 @@ from sqlalchemy import (
     Float,
     String,
     Boolean,
+    UUID as uuid,
+    ForeignKey
 )
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from model.base import ClassificadorFilmesSeriesBase
+from model.base import MoviesAndSeriesBase
 
 
-class Audiovisual(ClassificadorFilmesSeriesBase):
+class Audiovisual(MoviesAndSeriesBase):
     __tablename__ = "audiovisual"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
@@ -32,7 +34,7 @@ class Audiovisual(ClassificadorFilmesSeriesBase):
     poster: Mapped[str] = mapped_column(String(100), nullable=True)
     metascore: Mapped[int] = mapped_column(Integer, nullable=True)
     imdb_rating: Mapped[float] = mapped_column(Float, nullable=True)
-    imdb_votes: Mapped[float] = mapped_column(Float, nullable=True)
+    imdb_votes: Mapped[str] = mapped_column(String(50), nullable=True)
     imdb_id: Mapped[str] = mapped_column(String(50), nullable=True)
     type: Mapped[str] = mapped_column(String(50), nullable=True)
     dvd: Mapped[str] = mapped_column(String(50), nullable=True)
@@ -41,3 +43,19 @@ class Audiovisual(ClassificadorFilmesSeriesBase):
     production: Mapped[str] = mapped_column(String(50), nullable=True)
     website: Mapped[str] = mapped_column(String(50), nullable=True)
     response: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    rating: Mapped["Rating"] = relationship(
+        back_populates="audiovisual",
+        cascade="all, delete",
+    )
+
+
+class Rating(MoviesAndSeriesBase):
+    __tablename__ = "rating"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    audiovisual_id: Mapped[UUID] = mapped_column(
+        ForeignKey("audiovisual.id", ondelete="CASCADE"), 
+        unique=True
+    )
+    rating: Mapped[int] = mapped_column(Integer, nullable=False)
+    audiovisual: Mapped["Audiovisual"] = relationship(back_populates="rating")
