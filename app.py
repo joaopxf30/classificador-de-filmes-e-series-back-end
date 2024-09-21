@@ -11,8 +11,6 @@ import model.model as model
 
 from omdb_api import OMDbApi
 
-from sqlalchemy import inspect, select
-
 from sqlalchemy.exc import IntegrityError
 
 from schema import (
@@ -74,19 +72,18 @@ def get_audiovisuals():
 
     """
     LOG.info(f"Collecting movies and series")
-    session = Session()
-
-    if db_data := session.query(model.Audiovisual).all():
-        LOG.info("There are %d movies and series on the collection" % len(db_data))
-        audiovisuals_view = list(
-            map(
-                lambda v: AudiovisualView.model_validate(v),
-                db_data
+    with Session() as session:
+        if db_data := session.query(model.Audiovisual).all():
+            LOG.info("There are %d movies and series on the collection" % len(db_data))
+            audiovisuals_view = list(
+                map(
+                    lambda v: AudiovisualView.model_validate(v),
+                    db_data
+                )
             )
-        )
-        return {"audiovisuals": [v.model_dump() for v in audiovisuals_view]}, 200
-    
-    return {"audiovisuals": []}, 200
+            return {"audiovisuals": [v.model_dump() for v in audiovisuals_view]}, 200
+        
+        return {"audiovisuals": []}, 200
         
 
 @app.post(

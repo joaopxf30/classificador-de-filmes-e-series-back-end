@@ -1,15 +1,22 @@
-from pydantic import BaseModel, ConfigDict
-from constants import Notes
+from pydantic import BaseModel, ConfigDict, AliasGenerator
+from pydantic.alias_generators import to_camel, to_snake
 from uuid import UUID
 
 
 class PostRating(BaseModel):
-    """It represents the form of a POST request in order to give
-    a rating for some movie or series.
+    """It represents the form of a POST request in order to create
+    a tuple for a movie or series in the rating's table.
 
     """
     audiovisual_id: UUID
-    rating: Notes
+    rating: float | None = None
+
+    model_config = ConfigDict(
+        alias_generator=AliasGenerator(
+            validation_alias=to_camel,
+            serialization_alias=to_snake,
+        ),
+    )
 
 
 class PutRating(BaseModel):
@@ -18,14 +25,21 @@ class PutRating(BaseModel):
 
     """
     audiovisual_id: UUID
-    rating: Notes
+    rating: float
 
+    model_config = ConfigDict(
+        alias_generator=AliasGenerator(
+            validation_alias=to_camel,
+            serialization_alias=to_snake,
+        ),
+    )
     
+
 class RatingView(BaseModel):
     """It represents how an instance of Rating is returned.
 
     """
-    rating: Notes
+    rating: float | None
 
     model_config = ConfigDict(
         from_attributes=True,

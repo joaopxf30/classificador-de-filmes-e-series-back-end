@@ -3,7 +3,6 @@ import logging
 from uuid import UUID
 from pydantic import (
     BaseModel, 
-    HttpUrl, 
     ConfigDict, 
     AliasGenerator,
     AliasChoices,
@@ -14,8 +13,6 @@ from pydantic.alias_generators import to_camel, to_pascal, to_snake
 from typing import Any
 from model import Rating
 
-from constants import Notes
-
 LOG = logging.getLogger()
 
 
@@ -24,7 +21,7 @@ class PostAudiovisual(BaseModel):
     through OMDb API.   
 
     """
-    imdb_id: str | None = Field(default=None, validation_alias="IMDbID")
+    imdb_id: str | None = None
     title: str | None = None
     year: int | None = None
 
@@ -116,6 +113,7 @@ class AudiovisualView(BaseModel):
     """It represents how an instance of Audiovisual is returned.
 
     """
+    id: UUID
     title: str | None
     year: str | int | None
     runtime: str | None
@@ -123,14 +121,14 @@ class AudiovisualView(BaseModel):
     director: str | None
     actors: str | None
     plot: str | None
-    rating: Notes | None
+    rating: float | None
 
     model_config = ConfigDict(
         from_attributes=True,
     )
 
     @field_validator("rating", mode="before")
-    def _return_rating(cls, v: Rating | None) -> Notes | None:
+    def _return_rating(cls, v: Rating | None) -> float | None:
         if isinstance(v, Rating):
             return v.rating
         return v
