@@ -9,12 +9,11 @@ from model.base import MoviesAndSeriesBase
 from model.model import Audiovisual, Rating
 
 
-
 db_path = "database/"
 # Verifica se o diretorio não existe
 if not os.path.exists(db_path):
-   # Então cria o diretorio
-   os.makedirs(db_path)
+    # Então cria o diretorio
+    os.makedirs(db_path)
 
 # Url de acesso ao banco (essa é uma url de acesso ao sqlite local)
 db_url = "sqlite:///%sdb.sqlite3" % db_path
@@ -29,12 +28,13 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
 
+
 # Instancia um criador de seção com o banco
 Session = sessionmaker(bind=engine)
 
-# Cria o banco se ele não existir 
+# Cria o banco se ele não existir
 if not database_exists(engine.url):
-    create_database(engine.url) 
+    create_database(engine.url)
 
 # Cria as tabelas do banco, caso não existam
 MoviesAndSeriesBase.metadata.create_all(engine)

@@ -1,13 +1,6 @@
 from uuid import uuid4, UUID
 
-from sqlalchemy import (
-    Integer,
-    Float,
-    String,
-    Boolean,
-    UUID as uuid,
-    ForeignKey
-)
+from sqlalchemy import Integer, Float, String, Boolean, UUID as uuid, ForeignKey
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -54,8 +47,7 @@ class Rating(MoviesAndSeriesBase):
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     audiovisual_id: Mapped[UUID] = mapped_column(
-        ForeignKey("audiovisual.id", ondelete="CASCADE"), 
-        unique=True
+        ForeignKey("audiovisual.id", ondelete="CASCADE"), unique=True
     )
     rating: Mapped[float] = mapped_column(Float, nullable=False)
     audiovisual: Mapped["Audiovisual"] = relationship(back_populates="rating")

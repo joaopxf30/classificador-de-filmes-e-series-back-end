@@ -2,8 +2,8 @@ import regex as re
 import logging
 from uuid import UUID
 from pydantic import (
-    BaseModel, 
-    ConfigDict, 
+    BaseModel,
+    ConfigDict,
     AliasGenerator,
     AliasChoices,
     field_validator,
@@ -18,9 +18,10 @@ LOG = logging.getLogger()
 
 class PostAudiovisual(BaseModel):
     """It represents the form of a POST request for an Audiovisual's instance
-    through OMDb API.   
+    through OMDb API.
 
     """
+
     imdb_id: str | None = None
     title: str | None = None
     year: int | None = None
@@ -39,9 +40,8 @@ class PostAudiovisual(BaseModel):
 
 
 class Audiovisual(BaseModel):
-    """It represents the content of a successful request to the OMDb Api.  
+    """It represents the content of a successful request to the OMDb Api."""
 
-    """
     title: str | None
     year: str | int | None
     rated: str | None
@@ -73,29 +73,29 @@ class Audiovisual(BaseModel):
         populate_by_name=True,
         from_attributes=True,
         alias_generator=AliasGenerator(
-            validation_alias= lambda f: AliasChoices(
+            validation_alias=lambda f: AliasChoices(
                 to_camel(f),
-                to_pascal(f), 
+                to_pascal(f),
             ),
             serialization_alias=to_snake,
         ),
     )
-    
+
     @field_validator("imdb_rating", mode="before")
     @classmethod
     def _change_commma_to_dot(cls, v: str | float | None) -> float | None:
         if v and isinstance(v, str) and re.search(r",", v):
             return float(re.sub(",", ".", v))
-        
+
         return v
-    
+
     @field_validator("*", mode="before")
     def _empty_field(cls, v: Any) -> str | None:
         if isinstance(v, str) and re.search(r"N/A", v):
             return None
-    
+
         return v
-    
+
 
 class OMDbRating(BaseModel):
     source: str
@@ -110,9 +110,8 @@ class OMDbRating(BaseModel):
 
 
 class AudiovisualView(BaseModel):
-    """It represents how an instance of Audiovisual is returned.
+    """It represents how an instance of Audiovisual is returned."""
 
-    """
     id: UUID
     title: str | None
     year: str | int | None
@@ -132,11 +131,12 @@ class AudiovisualView(BaseModel):
         if isinstance(v, Rating):
             return v.rating
         return v
-    
+
 
 class AudiovisualQuery(BaseModel):
     """It represents the parameters for a query to a movie or
     series.
 
     """
+
     id: str

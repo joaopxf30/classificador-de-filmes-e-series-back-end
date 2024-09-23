@@ -8,6 +8,7 @@ class PostRating(BaseModel):
     the first rating for a movie or series in the rating's table.
 
     """
+
     audiovisual_id: UUID
     rating: float
 
@@ -24,6 +25,7 @@ class PutRating(BaseModel):
     the rating for some movie or series.
 
     """
+
     audiovisual_id: UUID
     rating: float
 
@@ -33,12 +35,11 @@ class PutRating(BaseModel):
             serialization_alias=to_snake,
         ),
     )
-    
+
 
 class RatingView(BaseModel):
-    """It represents how an instance of Rating is returned.
+    """It represents how an instance of Rating is returned."""
 
-    """
     rating: float | None
 
     model_config = ConfigDict(
@@ -47,10 +48,11 @@ class RatingView(BaseModel):
 
 
 class RatingQuery(BaseModel):
-    """It represents the parameters for a query to a rating's movie 
+    """It represents the parameters for a query to a rating's movie
     or series.
 
     """
+
     audiovisual_id: str
 
     model_config = ConfigDict(

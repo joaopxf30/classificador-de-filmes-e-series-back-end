@@ -1,4 +1,4 @@
-# API do projeto de controlador de treinos 
+# API do projeto de controlador de treinos
 
 Este pequeno projeto, intitulado controlador de treinos, compõe o MVP desenvolvido para a sprint de **Desenvolvimento Full Stack Básico** do curso de pós-graduação em Desenvolvimento Full Stack. O controlador de treinos é uma aplicação web responsável por cadastrar esportistas e registrar treinos vinculados a cada esportista. O presente documento ressalta aspectos do desenvolvimento voltados ao back-end.
 
@@ -63,5 +63,3 @@ A linguagem utilizada no back-end é Python na versão 3.11.2.
 ### Banco de dados
 
 O SGBD adotado é o SQLite e a interação entre o servidor de dados e o banco de dados é feita por ORM através do SQLAlchemy.
-
-
