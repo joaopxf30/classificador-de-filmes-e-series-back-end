@@ -57,5 +57,5 @@ class Rating(MoviesAndSeriesBase):
         ForeignKey("audiovisual.id", ondelete="CASCADE"), 
         unique=True
     )
-    rating: Mapped[float] = mapped_column(Float, nullable=True)
+    rating: Mapped[float] = mapped_column(Float, nullable=False)
     audiovisual: Mapped["Audiovisual"] = relationship(back_populates="rating")

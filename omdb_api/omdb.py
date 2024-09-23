@@ -3,6 +3,7 @@ import requests
 import backoff
 from .exceptions import (
     LackOfDataException,
+    DataNotFoundException,
     OMDbApiException,
 )
 from settings import (
@@ -25,7 +26,7 @@ class OMDbApi:
             params=self._parameters(imdb_id, title, year),
             url=API_OBDM_HOST,
         )
-
+    
     @backoff.on_exception(
         backoff.constant,
         exception=OMDbApiException,
@@ -45,12 +46,11 @@ class OMDbApi:
             raise LackOfDataException
         
         response = requests.get(url, params=params)
-
-        # if response.status_code != 200:
-        #     raise OMDBApiFailure(
-        #         msg=f"{}"
-        #     )
-
+        
+        response_json = response.json()
+        if response_json.get("Response") == "False":
+            raise DataNotFoundException
+            
         return response
     
     @staticmethod

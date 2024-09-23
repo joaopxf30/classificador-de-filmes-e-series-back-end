@@ -4,12 +4,12 @@ from uuid import UUID
 
 
 class PostRating(BaseModel):
-    """It represents the form of a POST request in order to create
-    a tuple for a movie or series in the rating's table.
+    """It represents the form of a POST request in order to give
+    the first rating for a movie or series in the rating's table.
 
     """
     audiovisual_id: UUID
-    rating: float | None = None
+    rating: float
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
@@ -52,3 +52,10 @@ class RatingQuery(BaseModel):
 
     """
     audiovisual_id: str
+
+    model_config = ConfigDict(
+        alias_generator=AliasGenerator(
+            validation_alias=to_camel,
+            serialization_alias=to_snake,
+        ),
+    )
