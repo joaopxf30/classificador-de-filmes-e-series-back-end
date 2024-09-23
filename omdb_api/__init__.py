@@ -3,4 +3,5 @@ from .exceptions import (
     LackOfDataException,
     DataNotFoundException,
     OMDbApiException,
+    OMDbKnownExcpetion,
 )

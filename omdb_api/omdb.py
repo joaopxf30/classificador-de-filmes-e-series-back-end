@@ -47,6 +47,9 @@ class OMDbApi:
         response_json = response.json()
         if response_json.get("Response") == "False":
             raise DataNotFoundException
+        
+        if response.status_code != 200:
+            return OMDbApiException
 
         return response
 

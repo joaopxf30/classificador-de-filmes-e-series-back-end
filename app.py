@@ -9,7 +9,7 @@ from urllib.parse import unquote
 from model import Session
 import model.model as model
 
-from omdb_api import OMDbApi, DataNotFoundException
+from omdb_api import OMDbApi, OMDbKnownExcpetion
 
 from sqlalchemy.exc import IntegrityError
 
@@ -92,7 +92,7 @@ def add_audiovisual(form: PostAudiovisual):
 
     try:
         response = OMDbApi().get_audiovisual(**form.model_dump())
-    except DataNotFoundException as e:
+    except OMDbKnownExcpetion as e:
         return {"message": e.msg}, 400
 
     audiovisual = Audiovisual.model_validate(response.json())

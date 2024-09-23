@@ -22,7 +22,7 @@ class PostAudiovisual(BaseModel):
 
     """
 
-    imdb_id: str | None = None
+    imdb_id: str | int | None = None
     title: str | None = None
     year: int | None = None
 
@@ -121,6 +121,7 @@ class AudiovisualView(BaseModel):
     actors: str | None
     plot: str | None
     rating: float | None
+    type: str
 
     model_config = ConfigDict(
         from_attributes=True,
