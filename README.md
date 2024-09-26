@@ -63,3 +63,52 @@ A linguagem utilizada no back-end é Python na versão 3.11.2.
 ### Banco de dados
 
 O SGBD adotado é o SQLite e a interação entre o servidor de dados e o banco de dados é feita por ORM através do SQLAlchemy.
+
+__
+## Run app with Docker
+
+Before proceeding, it is important to have Docker installed.
+
+### Building the image
+Open the terminal in the root .movies-and-series-catalogue-back-end. The Dockerfile and requirements.txt are there.
+Execute the following command:
+
+```
+docker build . -t movies-and-series-catalogue-back-end
+```
+
+If everything succeds, an image named movies-and-series-catalogue-back-end will be created. To check it, run the following in the same terminal:
+
+```
+docker images
+````
+
+A similar response should be seen in a good scenario:
+```
+REPOSITORY                             TAG       IMAGE ID       CREATED          SIZE
+movies-and-series-catalogue-back-end   latest    7bf0cba0ae33   31 minutes ago   1.19GB
+```
+
+### Run a container from the image
+Now, execute the following to create a container from the image
+
+```
+docker run --name msc-back-end -dp 5001:5001 movies-and-series-catalogue-back-end
+```
+
+It creates a container named msc-back-end, which binds the port 5001 of the container to the port 5001 of the host.
+
+Whenever it is necessary to stop the container, do the following command:
+
+```
+docker stop msc-back-end
+```
+
+Now, there is no need to create again another container. To run the same one, just do:
+
+```
+docker start msc-back-end
+```
+
+
+
