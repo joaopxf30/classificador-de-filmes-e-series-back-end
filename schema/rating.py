@@ -3,7 +3,7 @@ from pydantic.alias_generators import to_camel, to_snake
 from uuid import UUID
 
 
-class PostRating(BaseModel):
+class RatingPost(BaseModel):
     """It represents the form of a POST request in order to give
     the first rating for a movie or series in the rating's table.
 
@@ -20,7 +20,7 @@ class PostRating(BaseModel):
     )
 
 
-class PutRating(BaseModel):
+class RatingPut(BaseModel):
     """It represents the form of a PUT request in order to change
     the rating for some movie or series.
 
@@ -61,3 +61,19 @@ class RatingQuery(BaseModel):
             serialization_alias=to_snake,
         ),
     )
+
+
+class RatingRemovedMessage(BaseModel):
+    """It represents when a rating is removed.
+ 
+    """
+
+    message: str
+
+
+class RatingErrorMessage(BaseModel):
+    """It represents a not sucessful request
+
+    """
+
+    message: str

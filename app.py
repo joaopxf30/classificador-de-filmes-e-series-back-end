@@ -1,5 +1,4 @@
 import logging
-import pdb
 from uuid import UUID
 
 from flask_openapi3 import OpenAPI, Info, Tag
@@ -14,14 +13,18 @@ from omdb_api import OMDbApi, OMDbKnownExcpetion
 from sqlalchemy.exc import IntegrityError
 
 from schema import (
-    PostAudiovisual,
+    AudiovisualPost,
     Audiovisual,
     AudiovisualView,
     AudiovisualQuery,
-    PostRating,
-    PutRating,
+    AudiovisualRemovedMessage,
+    AudiovisualErrorMessage,
+    RatingPost,
+    RatingPut,
     RatingView,
     RatingQuery,
+    RatingRemovedMessage,
+    RatingErrorMessage,
 )
 
 from flask_cors import CORS
@@ -56,7 +59,6 @@ def home():
     tags=[AUDIOVISUAL_TAG],
     responses={
         "200": AudiovisualView,
-        # "404": ErrorSchema,
     },
 )
 def get_audiovisuals():
@@ -82,11 +84,12 @@ def get_audiovisuals():
     tags=[AUDIOVISUAL_TAG],
     responses={
         "200": AudiovisualView,
-        # "400": ErrorSchema,
-        # "409": ErrorSchema,
+        "400": AudiovisualErrorMessage,
+        "409": AudiovisualErrorMessage,
+        "500": AudiovisualErrorMessage,
     },
 )
-def add_audiovisual(form: PostAudiovisual):
+def add_audiovisual(form: AudiovisualPost):
     """Add a new movie or series to the collection"""
     session = Session()
 
@@ -94,6 +97,9 @@ def add_audiovisual(form: PostAudiovisual):
         response = OMDbApi().get_audiovisual(**form.model_dump())
     except OMDbKnownExcpetion as e:
         return {"message": e.msg}, 400
+
+    if response is None:
+        return {"message": "OMDb API is currently not responding"}, 500
 
     audiovisual = Audiovisual.model_validate(response.json())
     serial = audiovisual.model_dump(exclude={"ratings"})
@@ -132,8 +138,8 @@ def add_audiovisual(form: PostAudiovisual):
     rule="/delete_audiovisual",
     tags=[AUDIOVISUAL_TAG],
     responses={
-        # "200": EsportistaDeletadoSchema,
-        # "404": ErrorSchema
+        "200": AudiovisualRemovedMessage,
+        "404": AudiovisualErrorMessage,
     },
 )
 def delete_audiovisual(query: AudiovisualQuery):
@@ -164,11 +170,11 @@ def delete_audiovisual(query: AudiovisualQuery):
     tags=[RATING_TAG],
     responses={
         "200": RatingView,
-        # "400": ErrorSchema,
-        # "409": ErrorSchema,
+        "400": RatingErrorMessage,
+        "409": RatingErrorMessage,
     },
 )
-def add_rating(form: PostRating):
+def add_rating(form: RatingPost):
     """Add a rating to a movie or series from the the collection"""
     session = Session()
 
@@ -226,12 +232,11 @@ def add_rating(form: PostRating):
     rule="/change_rating",
     tags=[RATING_TAG],
     responses={
-        "200": PutRating,
-        # "400": ErrorSchema,
-        # "409": ErrorSchema,
+        "200": RatingPut,
+        "404": RatingErrorMessage,
     },
 )
-def change_rating(form: PutRating):
+def change_rating(form: RatingPut):
     """Change the rating for a movie or series"""
     LOG.info(f"Trying to change the previous rating for {form.rating}")
     session = Session()
@@ -251,15 +256,15 @@ def change_rating(form: PutRating):
 
     error_msg = f"There is no movie or series related to {form.audiovisual_id}"
     LOG.warning(f"{error_msg}")
-    return {"message": error_msg}, 409
+    return {"message": error_msg}, 404
 
 
 @app.delete(
     rule="/delete_rating",
     tags=[RATING_TAG],
     responses={
-        # "200": EsportistaDeletadoSchema,
-        # "404": ErrorSchema
+        "200": RatingRemovedMessage,
+        "404": RatingErrorMessage,
     },
 )
 def delete_rating(query: RatingQuery):

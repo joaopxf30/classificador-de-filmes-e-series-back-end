@@ -1,12 +1,16 @@
 from schema.audiovisual import (
-    PostAudiovisual,
+    AudiovisualPost,
     Audiovisual,
     AudiovisualView,
     AudiovisualQuery,
+    AudiovisualRemovedMessage,
+    AudiovisualErrorMessage,
 )
 from schema.rating import (
-    PostRating,
-    PutRating,
+    RatingPost,
+    RatingPut,
     RatingView,
     RatingQuery,
+    RatingRemovedMessage,
+    RatingErrorMessage,
 )

@@ -16,7 +16,7 @@ from model import Rating
 LOG = logging.getLogger()
 
 
-class PostAudiovisual(BaseModel):
+class AudiovisualPost(BaseModel):
     """It represents the form of a POST request for an Audiovisual's instance
     through OMDb API.
 
@@ -141,3 +141,19 @@ class AudiovisualQuery(BaseModel):
     """
 
     id: str
+
+
+class AudiovisualRemovedMessage(BaseModel):
+    """It represents when a movie or series is removed.
+
+    """
+
+    message: str
+
+
+class AudiovisualErrorMessage(BaseModel):
+    """It represents a not sucessful request.
+
+    """
+
+    message: str

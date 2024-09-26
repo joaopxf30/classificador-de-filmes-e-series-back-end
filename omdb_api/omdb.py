@@ -49,7 +49,7 @@ class OMDbApi:
             raise DataNotFoundException
         
         if response.status_code != 200:
-            return OMDbApiException
+            raise OMDbApiException
 
         return response
 
