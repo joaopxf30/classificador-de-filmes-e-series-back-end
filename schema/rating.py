@@ -64,16 +64,12 @@ class RatingQuery(BaseModel):
 
 
 class RatingRemovedMessage(BaseModel):
-    """It represents when a rating is removed.
- 
-    """
+    """It represents when a rating is removed."""
 
     message: str
 
 
 class RatingErrorMessage(BaseModel):
-    """It represents a not sucessful request
-
-    """
+    """It represents a not sucessful request"""
 
     message: str

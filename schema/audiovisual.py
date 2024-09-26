@@ -144,16 +144,12 @@ class AudiovisualQuery(BaseModel):
 
 
 class AudiovisualRemovedMessage(BaseModel):
-    """It represents when a movie or series is removed.
-
-    """
+    """It represents when a movie or series is removed."""
 
     message: str
 
 
 class AudiovisualErrorMessage(BaseModel):
-    """It represents a not sucessful request.
-
-    """
+    """It represents a not sucessful request."""
 
     message: str

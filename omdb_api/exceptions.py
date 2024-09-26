@@ -12,4 +12,3 @@ class LackOfDataException(OMDbKnownExcpetion):
 
 class DataNotFoundException(OMDbKnownExcpetion):
     msg = "There is no movie or series on the database based on the search key"
-
