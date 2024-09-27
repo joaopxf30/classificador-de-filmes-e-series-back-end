@@ -87,7 +87,7 @@ Python 3.11.2 was the chosen programming language.
 
 The chosen DBMS is SQLite and the interaction between the server and the database is done through SQLAlchemy's ORM.
 
-## Run app with Docker
+## Run with Docker
 
 Before proceeding, it is important to have Docker installed.
 
@@ -135,6 +135,3 @@ Now, there is no need to create again another container. To run the same one, ju
 ```
 docker start msc-back-end
 ```
-
-
-
