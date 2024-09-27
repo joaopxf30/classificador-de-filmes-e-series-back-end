@@ -79,7 +79,6 @@ Python 3.11.2 was the chosen programming language.
 
 The chosen DBMS is SQLite and the interaction between the server and the database is done through SQLAlchemy's ORM.
 
-__
 ## Run app with Docker
 
 Before proceeding, it is important to have Docker installed.
