@@ -94,7 +94,7 @@ The chosen DBMS is SQLite and the interaction between the server and the databas
 ---
 ## Run with Docker
 
-Before proceeding, it is important to have Docker installed.
+Before proceeding, it is important to have Docker installed: https://docs.docker.com/engine/install/.
 
 ### Build the image
 Open the terminal in the root `.movies-and-series-catalogue-back-end`. The `Dockerfile` and `requirements.txt` are there.
