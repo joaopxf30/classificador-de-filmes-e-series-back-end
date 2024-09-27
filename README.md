@@ -43,17 +43,17 @@ The dependencies are installed.
 
 There are two main entities in this project: **audiovisuals** and **ratings**.
 
-Audiovisuals consist on the content related to the movier os series itself: name, year actors, directors... Ratings are given by the user to each audiovisual.
+Audiovisuals consist on the content related to the movier os series itself: name, year, actors, directors... Ratings are given by the user to each audiovisual.
 
 There are 3 APIs relating to Audiovisuals:
 + GET -> Show all audiovisuals and their given rating from the database;
-+ POST -> Add a new audiovisual into the database (It is related to External API from OMDb);
-+ DELETE -> Remove a previous audivisual from the database.
++ POST -> Add a new audiovisual into the database (It relates to the external API from OMDb);
++ DELETE -> Remove a previous audiovisual from the database.
 
 There are 3 APIs relating to Ratings:
 + POST -> Add a new rating to a previous movie or series into the database;
 + PUT -> Change a preivous rating on the database;
-+ DELETE -> Remove the rating from the database;
++ DELETE -> Remove the rating from the database.
 
 The APIs are available when the following command is done in the root of the project:
 
@@ -71,7 +71,7 @@ The audiovisual content comes indeed from the OMDb API. The back-end of the proj
 
 ## Overall considerations
 
-### Linguagem de programação
+### Programming language
 
 Python 3.11.2 was the chosen programming language.
 
