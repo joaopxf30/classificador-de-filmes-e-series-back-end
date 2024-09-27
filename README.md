@@ -70,7 +70,7 @@ The internal APIs' documentation is available on http://127.0.0.1:5001/openapi/s
 ---
 ## External API
 
-The audiovisual content comes indeed from the OMDb API. The back-end of the project is responsible for interacting with OMDb. Whenever a POST request is done for an Audiovisual entity, the server performs a GET request to the OMDb API to retrieve the data. The server sends here at most 3 parameters:
+The audiovisual content comes indeed from the OMDb API. Here, in the back-end of the project, the interaction with OMDb happens. Whenever a POST request is done for an Audiovisual entity, the server performs a GET request to the OMDb API to retrieve the data. The server sends here at most 3 parameters:
 + Required:
   + `apikey` -> `972b4e0f` (retrieved after a register)
   + `i` -> IMDb Id (first option)
