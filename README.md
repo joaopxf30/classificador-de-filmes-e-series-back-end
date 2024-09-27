@@ -1,12 +1,11 @@
-# API do projeto de controlador de treinos
+# Movie and series' catalogue (Back-end)
 
-Este pequeno projeto, intitulado controlador de treinos, compõe o MVP desenvolvido para a sprint de **Desenvolvimento Full Stack Básico** do curso de pós-graduação em Desenvolvimento Full Stack. O controlador de treinos é uma aplicação web responsável por cadastrar esportistas e registrar treinos vinculados a cada esportista. O presente documento ressalta aspectos do desenvolvimento voltados ao back-end.
+This project was done for the MVP from the sprint of **Advanced Back-end Development** as part of the Full Stack Development. This app is responsible for searching for movies and series and adding them on a catalogue. It is possible to rate them and it is also possible to check informations from their production. The OMDb API provides the content from the audiovisuals. The present documentation focuses on aspects of the back-end development.
 
 
 ---
-## Ambientes virtuais
-
-É fortemente recomendado a utilização de ambientes virtuais. Para tal, execute no terminal a partir de um path desejado o seguinte comando de acordo com o sistema operacional:
+## Virtual environment
+It is a good practice to work with virtual environments in Python. Open the terminal from a desired path and accordingly to the operational system do the following command:
 
 **WINDOWS**:
 ```
@@ -17,8 +16,7 @@ python -m venv env
 ```
 python3 -m venv env
 ```
-
-Para ativação do ambiente virutal, execute o seguinte comando de acordo com a platafoma:
+Now, it is necessary to activate the virtual environment. Therefore, do the following according to the platform:
 
 **WINDOWS**:
 ```
@@ -30,54 +28,71 @@ Para ativação do ambiente virutal, execute o seguinte comando de acordo com a 
 source <path>/env/bin/activate
 ```
 
-O ambiente virtual será criado.
+The virtual enviroment is set up
 
-## Instalando dependências
-
-Todas as dependências do projeto se encontram no arquivo `requirements.txt`. A obtenção é feita a partir da execução do seguinte comando na raiz do projeto:
+## Managing dependencies
+All dependencies of the project are available in `requirements.txt`. Do the following in the root of the project in order to install them:
 
 ```
 pip install -r requirements.txt
 ```
 
-As dependências são instaladas.
+The dependencies are installed.
 
-## APIs do projeto
+## Internal APIs
 
-Para utilizar as APIs direcionadas à funcionalidade do esportista ou do treino, assim como acessar a documentação dessas, é necessário executar previamente o seguinte comando na raiz do projeto:
+There are two main entities in this project: **audiovisuals** and **ratings**.
+
+Audiovisuals consist on the content related to the movier os series itself: name, year actors, directors... Ratings are given by the user to each audiovisual.
+
+There are 3 APIs relating to Audiovisuals:
++ GET -> Show all audiovisuals and their given rating from the database;
++ POST -> Add a new audiovisual into the database (It is related to External API from OMDb);
++ DELETE -> Remove a previous audivisual from the database.
+
+There are 3 APIs relating to Ratings:
++ POST -> Add a new rating to a previous movie or series into the database;
++ PUT -> Change a preivous rating on the database;
++ DELETE -> Remove the rating from the database;
+
+The APIs are available when the following command is done in the root of the project:
 
 ```
 flask run --host 0.0.0.0 --port 5001
 ```
 
-### Documentação das APIs
+### Documentation
 
-A documentação das APIs se encontra disponibilizada no Swagger através do seguinte caminho: http://127.0.0.1:5001/openapi/swagger.
+The internal APIs' documentation is available on http://127.0.0.1:5001/openapi/swagger.
 
-## Aspectos gerais
+## External API
+
+The audiovisual content comes indeed from the OMDb API. The back-end of the project is responsible for interacting with OMDb. Whenever a POST request is done for an Audiovisual entity, the server performs a GET request to the OMDb API to retrieve the data. For more information about it, check https://www.omdbapi.com.
+
+## Overall considerations
 
 ### Linguagem de programação
 
-A linguagem utilizada no back-end é Python na versão 3.11.2.
+Python 3.11.2 was the chosen programming language.
 
-### Banco de dados
+### Database
 
-O SGBD adotado é o SQLite e a interação entre o servidor de dados e o banco de dados é feita por ORM através do SQLAlchemy.
+The chosen DBMS is SQLite and the interaction between the server and the database is done through SQLAlchemy's ORM.
 
 __
 ## Run app with Docker
 
 Before proceeding, it is important to have Docker installed.
 
-### Building the image
-Open the terminal in the root .movies-and-series-catalogue-back-end. The Dockerfile and requirements.txt are there.
+### Build the image
+Open the terminal in the root `.movies-and-series-catalogue-back-end`. The `Dockerfile` and `requirements.txt` are there.
 Execute the following command:
 
 ```
 docker build . -t movies-and-series-catalogue-back-end
 ```
 
-If everything succeds, an image named movies-and-series-catalogue-back-end will be created. To check it, run the following in the same terminal:
+If everything succeds, an image named `movies-and-series-catalogue-back-end` will be created. To check it, run the following in the same terminal:
 
 ```
 docker images
@@ -89,8 +104,12 @@ REPOSITORY                             TAG       IMAGE ID       CREATED         
 movies-and-series-catalogue-back-end   latest    7bf0cba0ae33   31 minutes ago   1.19GB
 ```
 
+#### Details of the image
+This image provides a virtualized environment with all the dependencies from the `requirements.txt` and `pyhton:3.11`.
+
+
 ### Run a container from the image
-Now, execute the following to create a container from the image
+Now, execute the following to create a container from the image:
 
 ```
 docker run --name msc-back-end -dp 5001:5001 movies-and-series-catalogue-back-end
