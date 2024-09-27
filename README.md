@@ -30,6 +30,7 @@ source <path>/env/bin/activate
 
 The virtual enviroment is set up
 
+---
 ## Managing dependencies
 All dependencies of the project are available in `requirements.txt`. Do the following in the root of the project in order to install them:
 
@@ -39,6 +40,7 @@ pip install -r requirements.txt
 
 The dependencies are installed.
 
+---
 ## Internal APIs
 
 There are two main entities in this project: **audiovisuals** and **ratings**.
@@ -65,9 +67,10 @@ flask run --host 0.0.0.0 --port 5001
 
 The internal APIs' documentation is available on http://127.0.0.1:5001/openapi/swagger.
 
+---
 ## External API
 
-The audiovisual content comes indeed from the OMDb API. The back-end of the project is responsible for interacting with OMDb. Whenever a POST request is done for an Audiovisual entity, the server performs a GET request to the OMDb API to retrieve the data. The server sends here at most 4 parameters:
+The audiovisual content comes indeed from the OMDb API. The back-end of the project is responsible for interacting with OMDb. Whenever a POST request is done for an Audiovisual entity, the server performs a GET request to the OMDb API to retrieve the data. The server sends here at most 3 parameters:
 + Required:
   + `apikey` -> `972b4e0f` (retrieved after a register)
   + `i` -> IMDb Id (first option)
@@ -77,6 +80,7 @@ The audiovisual content comes indeed from the OMDb API. The back-end of the proj
 
 For further information about it, check https://www.omdbapi.com.
 
+---
 ## Overall considerations
 
 ### Programming language
@@ -87,6 +91,7 @@ Python 3.11.2 was the chosen programming language.
 
 The chosen DBMS is SQLite and the interaction between the server and the database is done through SQLAlchemy's ORM.
 
+---
 ## Run with Docker
 
 Before proceeding, it is important to have Docker installed.
