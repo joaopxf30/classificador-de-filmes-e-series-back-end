@@ -17,12 +17,6 @@ class RatingPost(BaseModel):
             validation_alias=to_camel,
             serialization_alias=to_snake,
         ),
-        json_schema_extra={
-            "example": {
-                "audiovisualId": "01f538ec-4c9b-4019-925a-2badaef4d784",
-                "rating": 3.5,
-            }
-        },
     )
 
 
@@ -40,12 +34,6 @@ class RatingPut(BaseModel):
             validation_alias=to_camel,
             serialization_alias=to_snake,
         ),
-        json_schema_extra={
-            "example": {
-                "audiovisualId": "01f538ec-4c9b-4019-925a-2badaef4d784",
-                "rating": 2.0,
-            }
-        },
     )
 
 
@@ -72,9 +60,6 @@ class RatingQuery(BaseModel):
             validation_alias=to_camel,
             serialization_alias=to_snake,
         ),
-        json_schema_extra={
-            "example": {"audiovisualId": "01f538ec-4c9b-4019-925a-2badaef4d784"}
-        },
     )
 
 
