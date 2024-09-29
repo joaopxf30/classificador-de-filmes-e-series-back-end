@@ -17,6 +17,12 @@ class RatingPost(BaseModel):
             validation_alias=to_camel,
             serialization_alias=to_snake,
         ),
+        json_schema_extra={
+            "example": {
+                "audiovisualId": "01f538ec-4c9b-4019-925a-2badaef4d784",
+                "rating": 3.5,
+            }
+        },
     )
 
 
@@ -34,6 +40,12 @@ class RatingPut(BaseModel):
             validation_alias=to_camel,
             serialization_alias=to_snake,
         ),
+        json_schema_extra={
+            "example": {
+                "audiovisualId": "01f538ec-4c9b-4019-925a-2badaef4d784",
+                "rating": 2.0,
+            }
+        },
     )
 
 
@@ -43,7 +55,7 @@ class RatingView(BaseModel):
     rating: float | None
 
     model_config = ConfigDict(
-        from_attributes=True,
+        from_attributes=True, json_schema_extra={"example": {"rating": 2.0}}
     )
 
 
@@ -60,6 +72,9 @@ class RatingQuery(BaseModel):
             validation_alias=to_camel,
             serialization_alias=to_snake,
         ),
+        json_schema_extra={
+            "example": {"audiovisualId": "01f538ec-4c9b-4019-925a-2badaef4d784"}
+        },
     )
 
 
@@ -68,8 +83,16 @@ class RatingRemovedMessage(BaseModel):
 
     message: str
 
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"message": "Previous rating has been removed"}}
+    )
+
 
 class RatingErrorMessage(BaseModel):
     """It represents a not sucessful request"""
 
     message: str
+
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"message": "This is an error message"}}
+    )

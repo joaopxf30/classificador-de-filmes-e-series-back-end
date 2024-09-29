@@ -10,7 +10,7 @@ from pydantic import (
     Field,
 )
 from pydantic.alias_generators import to_camel, to_pascal, to_snake
-from typing import Any
+from typing import Any, Optional
 from model import Rating
 
 LOG = logging.getLogger()
@@ -22,9 +22,11 @@ class AudiovisualPost(BaseModel):
 
     """
 
-    imdb_id: str | int | None = None
-    title: str | None = None
-    year: int | None = None
+    imdb_id: str | int | None = Field(
+        default=None, description="Type: string, integer or empty value"
+    )
+    title: str | None = Field(default=None, description="Type: string or empty value")
+    year: int | None = Field(default=None, description="Type: integer or empty value")
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
@@ -125,6 +127,24 @@ class AudiovisualView(BaseModel):
 
     model_config = ConfigDict(
         from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": "64e259a8-8512-415f-8f52-8b3d9103f6c6",
+                "title": 3.5,
+                "year": "2014–2020",
+                "runtime": "43 min",
+                "genre": "Crime, Drama, Mystery",
+                "director": None,
+                "actors": "Viola Davis, Billy Brown, Jack Falahee",
+                "plot": (
+                    "A group of ambitious law students and their brilliant criminal defense "
+                    "professor become involved in a twisted murder plot that promises to change "
+                    "the course of their lives.",
+                ),
+                "rating": 3.0,
+                "type": "series",
+            }
+        },
     )
 
     @field_validator("rating", mode="before")
@@ -148,8 +168,16 @@ class AudiovisualRemovedMessage(BaseModel):
 
     message: str
 
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"message": "Movie or series removed"}}
+    )
+
 
 class AudiovisualErrorMessage(BaseModel):
     """It represents a not sucessful request."""
 
     message: str
+
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"message": "This is an error message"}}
+    )

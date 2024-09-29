@@ -50,7 +50,7 @@ HOME_TAG = Tag(
 
 @app.get("/", tags=[HOME_TAG])
 def home():
-    """Redireciona para /openapi, tela que permite a escolha do estilo de documentação."""
+    """Route to /openapi, where a documentation style can be chosen"""
     return redirect("/openapi")
 
 
@@ -175,7 +175,7 @@ def delete_audiovisual(query: AudiovisualQuery):
     },
 )
 def add_rating(form: RatingPost):
-    """Add a rating to a movie or series from the the collection"""
+    """Add a rating to a movie or series from the collection"""
     session = Session()
 
     db_data = model.Rating(**form.model_dump())
@@ -193,7 +193,7 @@ def add_rating(form: RatingPost):
         integrity_error = e.orig.sqlite_errorname
 
         if integrity_error == "SQLITE_CONSTRAINT_UNIQUE":
-            # Constaint unique disrespected
+            # Unique constraint disrespected
 
             audiovisual = (
                 Session()
