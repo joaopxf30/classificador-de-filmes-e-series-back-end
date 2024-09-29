@@ -232,7 +232,7 @@ def add_rating(form: RatingPost):
     rule="/change_rating",
     tags=[RATING_TAG],
     responses={
-        "200": RatingPut,
+        "200": RatingView,
         "404": RatingErrorMessage,
     },
 )
